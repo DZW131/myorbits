@@ -1,0 +1,5 @@
+schema_version: 1
+kind: source
+source:
+  orbit_id: issues
+  publish_target: orbit-template/issues

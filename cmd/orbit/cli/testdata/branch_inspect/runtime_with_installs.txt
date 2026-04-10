@@ -1,0 +1,9 @@
+kind: runtime
+reason: valid .harness/manifest.yaml present with kind=runtime
+harness_id: workspace
+member_count: 2
+member_ids: [cmd docs]
+definition_count: 2
+definition_ids: [cmd docs]
+install_count: 1
+install_ids: [docs]

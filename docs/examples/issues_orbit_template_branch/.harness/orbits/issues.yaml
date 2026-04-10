@@ -1,0 +1,72 @@
+id: issues
+name: Issues Orbit
+description: >
+  Keep issue work observable with status, outcome, evidence, and closure notes.
+
+meta:
+  file: .harness/orbits/issues.yaml
+  include_in_projection: true
+  include_in_write: true
+  include_in_export: true
+  include_description_in_orchestration: true
+  agents_template: |
+    # Issues Orbit
+    You are responsible for the issue-management loop of this harness.
+
+    Focus on one issue at a time and keep the loop observable:
+    - record the current status and outcome in an issue file
+    - gather evidence before changing status
+    - use the lightweight issue probe only for a quick ready / not_ready signal
+    - leave a short closure note when the issue is done
+
+    Read the rules in `docs/issues/README.md`, follow the process docs in
+    `docs/issues/process/`, and use `tools/check-issues.sh` only as a cheap local probe.
+
+members:
+  - key: issue-templates
+    name: Issue Templates
+    description: Reusable issue shells that define the minimal work object.
+    role: subject
+    paths:
+      include:
+        - docs/issues/templates/**
+    scopes:
+      export: true
+
+  - key: issue-workspace
+    name: Issue Workspace
+    description: Working issue state, outcome, evidence, and closure notes used at runtime.
+    role: subject
+    paths:
+      include:
+        - docs/issues/open/**
+        - docs/issues/closed/**
+
+  - key: issue-rules
+    name: Issue Rules
+    description: State rules, trace contract, and a lightweight observability probe.
+    role: rule
+    paths:
+      include:
+        - docs/issues/README.md
+        - tools/check-issues.sh
+
+  - key: issue-process
+    name: Issue Process
+    description: Triage and closure instructions for humans and agents.
+    role: process
+    paths:
+      include:
+        - docs/issues/process/**
+    scopes:
+      export: true
+
+rules:
+  scope:
+    projection_roles: [meta, subject, rule, process]
+    write_roles: [meta, rule]
+    export_roles: [meta, rule]
+    orchestration_roles: [meta, rule, process]
+  orchestration:
+    include_orbit_description: true
+    materialize_agents_from_meta: true

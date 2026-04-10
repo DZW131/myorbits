@@ -1,0 +1,96 @@
+[tools]
+go = "1.26.1"
+golangci-lint = "2.10.1"
+
+[tasks.fmt]
+description = "Run gofmt"
+run = """
+if ! git ls-files --cached --others --exclude-standard -- '*.go' | grep -q .; then
+  echo "No Go files yet; skipping gofmt"
+  exit 0
+fi
+
+git ls-files -z --cached --others --exclude-standard -- '*.go' | xargs -0 gofmt -s -w
+"""
+
+[tasks.build]
+description = "Build orbit and harness binaries into .dist/bin"
+run = "sh ./scripts/build_binaries.sh ./.dist/bin"
+
+[tasks.lint]
+description = "Run lint checks"
+depends = ["lint:go", "lint:gofmt", "lint:gomod"]
+
+[tasks."lint:go"]
+description = "Run golangci-lint"
+run = "./scripts/run_golangci_lint.sh"
+
+[tasks."lint:gofmt"]
+description = "Check gofmt"
+run = """
+if ! git ls-files --cached --others --exclude-standard -- '*.go' | grep -q .; then
+  echo "No Go files yet; skipping gofmt check"
+  exit 0
+fi
+
+unformatted="$(git ls-files -z --cached --others --exclude-standard -- '*.go' | xargs -0 gofmt -l -s)"
+if [ -n "$unformatted" ]; then
+  echo "These .go files need formatting:"
+  echo ""
+  echo "$unformatted"
+  echo ""
+  echo "To fix: mise run fmt"
+  exit 1
+fi
+"""
+
+[tasks."lint:gomod"]
+description = "Validate go.mod/go.sum"
+run = """
+if [ -f go.mod ]; then
+  export GOPROXY="${GOPROXY:-direct}"
+  export GOSUMDB="${GOSUMDB:-off}"
+  go mod tidy
+  git diff --exit-code -- go.mod go.sum
+else
+  echo "No go.mod yet; skipping go.mod validation"
+fi
+"""
+
+[tasks.test]
+description = "Run unit tests"
+depends = ["test:go", "test:scripts"]
+
+[tasks."test:go"]
+description = "Run Go unit tests"
+run = """
+if [ -f go.mod ]; then
+  export GOPROXY="${GOPROXY:-direct}"
+  export GOSUMDB="${GOSUMDB:-off}"
+  go test ./...
+else
+  echo "No go.mod yet; skipping tests"
+fi
+"""
+
+[tasks."test:scripts"]
+description = "Run shell-based validation tests"
+run = """
+sh ./scripts/test_run_golangci_lint.sh
+sh ./scripts/test_build_binaries.sh
+sh ./scripts/test_active_docs_v04.sh
+sh ./scripts/test_acceptance_quickstart.sh
+sh ./scripts/acceptance_quickstart.sh
+"""
+
+[tasks."test:ci"]
+description = "Run CI-local validation"
+depends = ["lint", "test"]
+
+[tasks."acceptance:mvp"]
+description = "Legacy alias for the quickstart acceptance smoke"
+run = "sh ./scripts/acceptance_mvp.sh"
+
+[tasks."acceptance:quickstart"]
+description = "Run the single-control-plane quickstart acceptance smoke"
+run = "sh ./scripts/acceptance_quickstart.sh"

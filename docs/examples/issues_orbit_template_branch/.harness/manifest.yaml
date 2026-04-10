@@ -1,0 +1,5 @@
+schema_version: 1
+kind: orbit_template
+template:
+  orbit_id: issues
+  published_from: source/issues

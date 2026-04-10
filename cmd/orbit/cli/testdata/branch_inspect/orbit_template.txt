@@ -1,0 +1,9 @@
+kind: template
+template_kind: orbit
+reason: valid .harness/manifest.yaml present with kind=orbit_template
+member_count: 0
+member_ids: []
+definition_count: 1
+definition_ids: [docs]
+install_count: 0
+install_ids: []
